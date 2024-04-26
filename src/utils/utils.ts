@@ -133,3 +133,29 @@ export function createElement<
     }
     return element;
 }
+
+// Формирует название класса в зависимости от категории 
+
+export function createClassCategory(value: string): string {
+    let res;
+    
+    switch(value) {
+        case 'другое': 
+            res = 'other';
+            break;
+        case 'софт-скил': 
+            res = 'soft';
+            break;
+        case 'дополнительное': 
+            res = 'additional';
+            break;
+        case 'кнопка': 
+            res = 'button';
+            break;
+        case 'хард-скил': 
+            res = 'hard'
+            break;
+    }
+
+    return 'card__category_' + res;
+}
