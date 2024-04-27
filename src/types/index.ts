@@ -35,3 +35,8 @@ export interface ICardActions {
 export interface IServerResponse {
     items: ICard[];
 }
+
+export interface IBasketView {
+    items: HTMLElement[];
+    price: number;
+}

@@ -1,6 +1,6 @@
 import { AppModelData } from './components/AppModelData';
+import { Basket } from './components/Basket';
 import { Card } from './components/Card';
-import { CardModel } from './components/CardModel';
 import { Page } from './components/Page';
 import { Modal } from './components/base/Modal';
 import { Api } from './components/base/api';
@@ -8,13 +8,14 @@ import { EventEmitter } from './components/base/events';
 import './scss/styles.scss';
 import { IServerResponse, ICard } from './types';
 import { API_URL } from './utils/constants';
-import { cloneTemplate, ensureElement } from './utils/utils';
+import { cloneTemplate, createElement, ensureElement } from './utils/utils';
 
 // Шаблоны
 
 const cardTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
-const modalTemplate = ensureElement<HTMLElement>('#modal-container')
+const modalTemplate = ensureElement<HTMLElement>('#modal-container');
+const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 
 const api = new Api(API_URL);
 const events = new EventEmitter();
@@ -22,6 +23,7 @@ const appData = new AppModelData({}, events);
 
 const page = new Page(document.body, events);
 const modal = new Modal(modalTemplate, events);
+const basket = new Basket(cloneTemplate(basketTemplate), events);
 
 // Получаем лоты с сервера
 api
@@ -55,7 +57,11 @@ events.on('card:select', (item: ICard) => {
 });
 
 events.on('preview:changed', (item: ICard) => {
-  const card = new Card(cloneTemplate(cardPreviewTemplate), 'card');
+  const card = new Card(cloneTemplate(cardPreviewTemplate), 'card', {
+    onClick: () => {
+      events.emit('card:toBasket', item)
+    },
+  });
   modal.render({
     content: card.render({
       title: item.title,
@@ -67,6 +73,13 @@ events.on('preview:changed', (item: ICard) => {
   });
 })
 
+// Добавление товара в корзину
+events.on('card:toBasket', (item: ICard) => {
+  appData.addToBasket(item);
+  page.counter = appData.getBasketAmount();
+  modal.close();
+})
+
 // Блокируем прокрутку страницы если открыта модалка
 events.on('modal:open', () => {
   page.locked = true;
@@ -75,4 +88,11 @@ events.on('modal:open', () => {
 // ... и разблокируем
 events.on('modal:close', () => {
   page.locked = false;
+});
+
+// Открыть активные лоты
+events.on('bids:open', () => {
+  modal.render({
+    content: createElement<HTMLElement>('div', {}, basket.render())
+  });
 });
