@@ -28,6 +28,10 @@ export interface IAppState {
     catalog: ICard[];
 }
 
+export interface ICardActions {
+    onClick: (event: MouseEvent) => void;
+}
+
 export interface IServerResponse {
     items: ICard[];
 }
