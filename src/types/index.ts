@@ -40,3 +40,9 @@ export interface IBasketView {
     items: HTMLElement[];
     price: number;
 }
+
+export interface IBasketItem {
+    number: number;
+    title: string;
+    price: number;
+}

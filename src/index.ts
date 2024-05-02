@@ -1,5 +1,6 @@
 import { AppModelData } from './components/AppModelData';
 import { Basket } from './components/Basket';
+import { BasketItem } from './components/BasketItem';
 import { Card } from './components/Card';
 import { Page } from './components/Page';
 import { Modal } from './components/base/Modal';
@@ -16,6 +17,7 @@ const cardTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const modalTemplate = ensureElement<HTMLElement>('#modal-container');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
+const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 
 const api = new Api(API_URL);
 const events = new EventEmitter();
@@ -76,7 +78,22 @@ events.on('preview:changed', (item: ICard) => {
 // Добавление товара в корзину
 events.on('card:toBasket', (item: ICard) => {
   appData.addToBasket(item);
+
+  basket.items = appData.basket.map((item, index) => {
+    const basketItem = new BasketItem(cloneTemplate(cardBasketTemplate), {
+      onClick: () => events.emit('basket:delete', item)
+    });
+
+    return basketItem.render({
+      title: item.title,
+      price: item.price | 0,
+      number: index + 1
+    });
+  })
+
   page.counter = appData.getBasketAmount();
+  basket.total = appData.getTotalBasketPrice();
+  basket.selected = appData.getBasketAmount();
   modal.close();
 })
 
@@ -90,9 +107,22 @@ events.on('modal:close', () => {
   page.locked = false;
 });
 
-// Открыть активные лоты
+// Открыть корзину
 events.on('bids:open', () => {
   modal.render({
     content: createElement<HTMLElement>('div', {}, basket.render())
   });
 });
+
+// Удалить товар из корзины
+events.on('basket:delete', (item: ICard) => {
+  appData.deleteFromBasket(item.id);
+  basket.total = appData.getTotalBasketPrice();
+  page.counter = appData.getBasketAmount();
+  basket.selected = appData.getBasketAmount();
+  basket.renumerateItems();
+
+  if (!appData.basket.length) {
+    basket.items = [];
+  }
+})

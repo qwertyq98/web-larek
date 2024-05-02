@@ -24,4 +24,13 @@ export class AppModelData extends Model<IAppState> {
     getBasketAmount() {
         return this.basket.length;
     }
+
+    getTotalBasketPrice() {
+        const sum = this.basket.reduce((sum, next) => sum + next.price, 0);
+        return sum + ' синапсов';
+    }
+
+    deleteFromBasket(id: string) {
+        this.basket = this.basket.filter(item => item.id !== id)
+    }
 }
