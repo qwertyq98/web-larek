@@ -2,12 +2,14 @@ import { AppModelData } from './components/AppModelData';
 import { Basket } from './components/Basket';
 import { BasketItem } from './components/BasketItem';
 import { Card } from './components/Card';
+import { Contacts } from './components/Contacts';
+import { Order } from './components/Order';
 import { Page } from './components/Page';
 import { Modal } from './components/base/Modal';
 import { Api } from './components/base/api';
 import { EventEmitter } from './components/base/events';
 import './scss/styles.scss';
-import { IServerResponse, ICard } from './types';
+import { IServerResponse, ICard, IOrder, IOrderForm } from './types';
 import { API_URL } from './utils/constants';
 import { cloneTemplate, createElement, ensureElement } from './utils/utils';
 
@@ -18,6 +20,8 @@ const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const modalTemplate = ensureElement<HTMLElement>('#modal-container');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
+const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
+const contactTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 
 const api = new Api(API_URL);
 const events = new EventEmitter();
@@ -26,6 +30,8 @@ const appData = new AppModelData({}, events);
 const page = new Page(document.body, events);
 const modal = new Modal(modalTemplate, events);
 const basket = new Basket(cloneTemplate(basketTemplate), events);
+const order = new Order(cloneTemplate(orderTemplate), events);
+const contacts = new Contacts(cloneTemplate(contactTemplate), events);
 
 // Получаем лоты с сервера
 api
@@ -126,3 +132,33 @@ events.on('basket:delete', (item: ICard) => {
     basket.items = [];
   }
 })
+
+// Открыть окно заказа 
+events.on('order:open', () => {
+  modal.render({
+    content: order.render({
+      address: '',
+      valid: false, 
+      errors: [],
+    })
+  });
+})
+
+// Изменилось состояние валидации формы
+events.on('orderFormErrors:change', (errors: Partial<IOrder>) => {
+  const { address, payment } = errors;
+  order.valid = (!address && !payment);
+  order.errors = Object.values({address, payment}).filter(i => !!i).join('; ');
+});
+
+// Изменилось состояние валидации формы
+events.on('contactsFormErrors:change', (errors: Partial<IOrder>) => {
+  const { email, phone } = errors;
+  order.valid = (!email && !phone);
+  order.errors = Object.values({email, phone}).filter(i => !!i).join('; ');
+});
+
+// Изменилось одно из полей
+events.on('orderInput:change', (data: { field: keyof IOrderForm, value: string }) => {
+  appData.setOrderField(data.field, data.value);
+});

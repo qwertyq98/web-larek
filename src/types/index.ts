@@ -10,12 +10,12 @@ export interface ICard {
 }
 
 export interface IOrder {
-    payment: string, 
-    email:string,
-    phone: string, 
-    address: string,
+    payment?: string, 
+    email?:string,
+    phone?: string, 
+    address?: string,
     total: number,
-    items: string[]
+    items: string[],
 }
 
 export interface IPage {
@@ -45,4 +45,18 @@ export interface IBasketItem {
     number: number;
     title: string;
     price: number;
+}
+
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
+
+export interface IOrderForm {
+    payment: string;
+    address: string;
+    email: string;
+    phone: string;
+}
+
+export interface IContacts {
+    phone: string;
+    email: string;
 }
