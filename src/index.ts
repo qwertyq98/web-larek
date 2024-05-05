@@ -5,8 +5,9 @@ import { Card } from './components/Card';
 import { Contacts } from './components/Contacts';
 import { Order } from './components/Order';
 import { Page } from './components/Page';
+import { Success } from './components/Success';
 import { Modal } from './components/base/Modal';
-import { Api } from './components/base/api';
+import { Api, ApiListResponse } from './components/base/api';
 import { EventEmitter } from './components/base/events';
 import './scss/styles.scss';
 import { IServerResponse, ICard, IOrder, IOrderForm } from './types';
@@ -22,6 +23,7 @@ const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
 const contactTemplate = ensureElement<HTMLTemplateElement>('#contacts');
+const successTemplate = ensureElement<HTMLTemplateElement>('#success')
 
 const api = new Api(API_URL);
 const events = new EventEmitter();
@@ -32,6 +34,12 @@ const modal = new Modal(modalTemplate, events);
 const basket = new Basket(cloneTemplate(basketTemplate), events);
 const order = new Order(cloneTemplate(orderTemplate), events);
 const contacts = new Contacts(cloneTemplate(contactTemplate), events);
+const success = new Success('order-success', cloneTemplate(successTemplate), {
+  onClick: () => {
+    events.emit('modal:close');
+    modal.close();
+  }
+})
 
 // Получаем лоты с сервера
 api
@@ -144,6 +152,18 @@ events.on('order:open', () => {
   });
 })
 
+// Открыть окно контактов 
+events.on('contacts:open', () => {
+  modal.render({
+    content: contacts.render({
+      phone: '',
+      email: '',
+      valid: false, 
+      errors: [],
+    })
+  });
+})
+
 // Изменилось состояние валидации формы
 events.on('orderFormErrors:change', (errors: Partial<IOrder>) => {
   const { address, payment } = errors;
@@ -154,11 +174,47 @@ events.on('orderFormErrors:change', (errors: Partial<IOrder>) => {
 // Изменилось состояние валидации формы
 events.on('contactsFormErrors:change', (errors: Partial<IOrder>) => {
   const { email, phone } = errors;
-  order.valid = (!email && !phone);
-  order.errors = Object.values({email, phone}).filter(i => !!i).join('; ');
+  contacts.valid = (!email && !phone);
+  contacts.errors = Object.values({email, phone}).filter(i => !!i).join('; ');
 });
 
 // Изменилось одно из полей
 events.on('orderInput:change', (data: { field: keyof IOrderForm, value: string }) => {
   appData.setOrderField(data.field, data.value);
 });
+
+events.on('order:send', () => {
+  appData.order.total = +appData.getTotalBasketPrice().split(' ')[0];
+  appData.order.items = appData.basket.map(item => item.id);
+
+  api
+  .post('/order', appData.order)
+  .then((res: ApiListResponse<string>) => {
+    appData.basket = [];
+    basket.items = [];
+    basket.selected = 0;
+    basket.total = '0 синапсов';
+    appData.order = {
+      items: [],
+      total: null,
+      address: '',
+      email: '',
+      phone: '',
+      payment: ''
+    };
+    page.counter = 0;
+    events.emit('order:finish', res);
+  })
+  .catch((err) => {
+    console.error(err);
+  });
+})
+
+// Окно успешной покупки
+events.on('order:finish', (res: ApiListResponse<string>) => {
+  modal.render({
+    content: success.render({
+      description: res.total
+    })
+  })
+})

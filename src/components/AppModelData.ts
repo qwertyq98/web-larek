@@ -78,5 +78,5 @@ export class AppModelData extends Model<IAppState> {
         if (this.validateContacts()) {
             this.events.emit('contacts:ready', this.order);
         }
-      }
+    }
 }
