@@ -40,7 +40,16 @@ export class AppModelData extends Model<IAppState> {
     }
 
     deleteFromBasket(id: string) {
-        this.basket = this.basket.filter(item => item.id !== id)
+        let isDelited = false;
+        this.basket = this.basket.filter(item => {
+            if(item.id === id && !isDelited) {
+                item.id !== id;
+                isDelited = true;
+                return false;
+            } else {
+                return true;
+            }
+        })
     }
 
     validateContacts() {

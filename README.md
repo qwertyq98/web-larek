@@ -45,5 +45,5 @@ npm run build
 yarn build
 ```
 ## Дополнительная информация
-- Адрес сервера, к которому обращаюсь за данными через API - API_ORIGIN=https://larek-api.nomoreparties.co 
+- Адрес сервера, к которому обращаюсь за данными через API - https://larek-api.nomoreparties.co 
 - [Макет](https://www.figma.com/file/50YEgxY8IYDYj7UQu7yChb/%D0%92%D0%B5%D0%B1-%D0%BB%D0%B0%D1%80%D1%91%D0%BA?type=design&node-id=0-1&mode=design&t=gSOmMz9TASYfV4uD-0)

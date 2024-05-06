@@ -84,7 +84,8 @@ events.on('preview:changed', (item: ICard) => {
       image: item.image,
       category: item.category,
       price: item.price,
-      description: item.description
+      description: item.description,
+      disabled: (item.price === null),
     })
   });
 })

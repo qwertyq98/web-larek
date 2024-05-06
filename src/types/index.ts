@@ -6,7 +6,8 @@ export interface ICard {
     image: string,
     title: string,
     category: categoryType,
-    price: number | null
+    price: number | null,
+    disabled?: boolean,
 }
 
 export interface IOrder {

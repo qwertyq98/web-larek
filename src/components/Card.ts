@@ -18,7 +18,6 @@ export class Card extends Component<ICard>{
         this._price = ensureElement<HTMLElement>(`.${blockName}__price`, container);
         this._button = container.querySelector(`.${blockName}__button`);
 
-
         if (actions?.onClick) {
             if (this._button) {
               this._button.addEventListener('click', actions.onClick);
@@ -43,5 +42,9 @@ export class Card extends Component<ICard>{
 
     set image(value: string) {
         this.setImage(this._image, value, this.title)
+    }
+
+    set disabled(value: boolean) {
+        this._button.disabled = value;
     }
 }
