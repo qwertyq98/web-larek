@@ -1,7 +1,12 @@
 {
   "name": "my-webpack-project",
   "version": "1.0.0",
+  "homepage": "https://larek-api.nomoreparties.co/web-larek",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qwertyq98/web-larek.git"
+  },
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.21.5",
@@ -42,6 +47,7 @@
     "lint": "eslint --ext .js,.ts ./src",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier ./src --write",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   }
 }
